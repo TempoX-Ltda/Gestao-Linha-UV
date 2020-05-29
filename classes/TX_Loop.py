@@ -14,7 +14,7 @@ from configparser import ConfigParser
 from classes.TX_Foco import Focar
 from classes.TX_QualityTest import QualityTest
 from classes.TX_GetVelocity import getVelocity
-from classes.TX_Serial import SerialStream
+from classes.TX_ExportFile import ExportStream
 
 class loop():
 
@@ -44,13 +44,6 @@ class loop():
         else:
             Histogram_plot  = False
 
-        SerialCom           = GeneralConfig.getboolean('Serial', 'Status')
-        if SerialCom:
-            SerialPort      = GeneralConfig.get('Serial', 'Port')
-            SerialBaudrate  = GeneralConfig.getint('Serial', 'Baudrate')
-            SerialUpload_F  = GeneralConfig.getfloat('Serial', 'Upload_Frequency')
-            SerialTimeout   = GeneralConfig.getfloat('Serial', 'Timeout')
-
         mmperPixel       = Align.mmByPx
 
         fps              = 30
@@ -69,8 +62,8 @@ class loop():
 
         Foco = Focar()
 
-        if SerialCom:
-            ser = SerialStream(SerialPort, SerialUpload_F, Baudrate=SerialBaudrate, timeout=SerialTimeout).start()
+        PartExport = ExportStream('Parts_Export')
+        PartExport.start()
 
         if Use_QualityTest:
             QT = QualityTest(VT.perfectPaternPath, Foco.StackedParts).start()
@@ -188,18 +181,13 @@ class loop():
             #except:
             #    pass
 
-            
             # Destroi as janelas das peças que sairam do quadro
             for num_obj in pcs_inframe_old:
                 if not num_obj in pcs_inframe:
                     if Show_separate_Parts:
                         cv2.destroyWindow('pc' + str(num_obj))
-                    if SerialCom:
-                        ser.send(Foco.Parts[num_obj])
 
-            if SerialCom:
-                if timeit.default_timer() - ser.last_sent < 5: # TODO precisa ser implementado o esquema para quando não estiver com peças passando, ele continuar enviando os dados de produtividade
-                    ser.send(Foco.Parts[num_obj])
+                    PartExport.send(Foco.Parts[num_obj])
 
             # Conta M2
             scan = thresh[Align.start_scan : Align.end_scan,
@@ -245,12 +233,11 @@ class loop():
             if key == 27:
                 break
 
-        if SerialCom:    
-            ser.stop()
-
         print("{:0.2f} M² processados".format(m2))
         cap.release()
 
+        PartExport.stop()
+        
         cv2.destroyAllWindows()
 
         if Use_QualityTest == True:    
