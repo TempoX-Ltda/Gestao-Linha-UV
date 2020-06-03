@@ -45,15 +45,17 @@ class Focar():
         
         # Armazena num 'dict' todas as peças no momento em que elas estão em seu maior tamanho na tela
         if not id_obj[1] in self.Parts:
-            self.Parts[id_obj[1]] = {'comp':comp_pc,
-                                    'larg':larg_pc,
-                                    'img_array':image_cut}
+            self.Parts[id_obj[1]] = {'PartNum':id_obj[1],
+                                     'Comp':comp_pc,
+                                     'Larg':larg_pc,
+                                     'img_array':image_cut}
         else:
-            if comp_pc > self.Parts[id_obj[1]]['comp'] and larg_pc > self.Parts[id_obj[1]]['larg']:
-                self.Parts[id_obj[1]] = {'comp':comp_pc,
-                                         'larg':larg_pc,
+            if comp_pc > self.Parts[id_obj[1]]['Comp'] and larg_pc > self.Parts[id_obj[1]]['Larg']:
+                self.Parts[id_obj[1]] = {'PartNum':id_obj[1],
+                                         'Comp':comp_pc,
+                                         'Larg':larg_pc,
                                          'img_array':image_cut}
-        
+        #print(type(image_cut))
         if showWindow == True:        
             cv2.imshow('pc' + str(id_obj[1]), image_cut)
         

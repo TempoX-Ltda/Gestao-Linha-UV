@@ -14,6 +14,7 @@ from configparser import ConfigParser
 from classes.TX_Foco import Focar
 from classes.TX_QualityTest import QualityTest
 from classes.TX_GetVelocity import getVelocity
+from classes.TX_ExportFile import ExportStream
 
 class loop():
 
@@ -35,13 +36,13 @@ class loop():
         Show_separate_Parts = GeneralConfig.getboolean('Window', 'Show_separate_Parts')
         Draw_contours       = GeneralConfig.get('Window', 'Draw_contours')
 
-        Get_Velocity               = GeneralConfig.getboolean('Modules', 'Get_Velocity')
-        Use_QualityTest            = GeneralConfig.getboolean('Modules', 'QualityTest')
+        Get_Velocity        = GeneralConfig.getboolean('Modules', 'Get_Velocity')
+        Use_QualityTest     = GeneralConfig.getboolean('Modules', 'QualityTest')
         
         if Show_separate_Parts == True:
-            Histogram_plot = GeneralConfig.getboolean('Modules', 'Histogram_plot')
+            Histogram_plot  = GeneralConfig.getboolean('Modules', 'Histogram_plot')
         else:
-            Histogram_plot = False
+            Histogram_plot  = False
 
         mmperPixel       = Align.mmByPx
 
@@ -61,10 +62,13 @@ class loop():
 
         Foco = Focar()
 
-        if Use_QualityTest == True:
+        PartExport = ExportStream('Parts_Export')
+        PartExport.start()
+
+        if Use_QualityTest:
             QT = QualityTest(VT.perfectPaternPath, Foco.StackedParts).start()
 
-        if Get_Velocity == True:
+        if Get_Velocity:
             # Instância a classe para acompanhar a velocidade da esteira
             Velocity = getVelocity(Align.CameraConfigPath,
                                 Align.paternName,
@@ -82,7 +86,7 @@ class loop():
             if ret != True: #Valida se o frame existe
                 break
             
-            if Get_Velocity == True: 
+            if Get_Velocity: 
                 razao_horizontal = (Velocity.get(unit='mm/sec')) / fps # "resolução" horizontal de captura
             
             counterframe   += 1
@@ -159,7 +163,7 @@ class loop():
                     objetos.append(obj_atual)
                     objs_frame.append(obj_atual)
                     pcs_inframe.append(obj_atual[1])
-                    print(pcs_inframe)
+
                     # Identifica o último objeto que passou           
                     for i in range(len(objs_frame)):
                         if objs_frame[i][2] < referencia:
@@ -177,11 +181,13 @@ class loop():
             #except:
             #    pass
 
-            if Show_separate_Parts == True:
-                # Destroi as janelas das peças que sairam do quadro
-                for num_obj in pcs_inframe_old:
-                    if not num_obj in pcs_inframe:
+            # Destroi as janelas das peças que sairam do quadro
+            for num_obj in pcs_inframe_old:
+                if not num_obj in pcs_inframe:
+                    if Show_separate_Parts:
                         cv2.destroyWindow('pc' + str(num_obj))
+
+                    PartExport.send(Foco.Parts[num_obj])
 
             # Conta M2
             scan = thresh[Align.start_scan : Align.end_scan,
@@ -226,13 +232,12 @@ class loop():
             key = cv2.waitKey(1) 
             if key == 27:
                 break
-            
-        
-        print(Foco.Parts)
 
         print("{:0.2f} M² processados".format(m2))
         cap.release()
 
+        PartExport.stop()
+        
         cv2.destroyAllWindows()
 
         if Use_QualityTest == True:    
