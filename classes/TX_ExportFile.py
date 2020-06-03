@@ -46,22 +46,36 @@ class ExportStream():
         self.last_sent = timeit.default_timer()
 
         self.tasks.put(data)
+        print(self.tasks)
 
-    def opencvImageExport(self, Type, filePath, namePatern, sep, ext, tasks, frequency, running):
+    def opencvImageExport(self, filePath, namePatern, sep, ext, tasks, frequency, running):
         
         while running.empty():
             try:
                 task = tasks.get_nowait()
+                #print('Essa é a tarefa:')
+                #print(task)
+
             except queue.Empty:
-                print('Sem tarefas por enquanto, vou tirar uma soneca...')
+                #print('Sem tarefas por enquanto, vou tirar uma soneca...')
                 sleep(frequency)
+                
             else:
                 fileName = ''
-                for option in namePatern:
-                    fileName += sep
-                    fileName += task[option]
+                for opt_num, option in enumerate(namePatern):
                     
-                fileName += ext
+                    parameter = task[str(option).strip()]
+                    if isinstance(parameter, float):
+                        parameter = int(parameter)
+                    
+                    parameter = str(parameter)
+
+                    if opt_num == 0:
+                        fileName = fileName + parameter
+                    else:
+                        fileName = fileName + sep + parameter
+
+                fileName = fileName + ext
                 finalPath = Path(filePath, fileName)
 
                 cv2.imwrite(str(finalPath), task['img_array'])
