@@ -10,9 +10,9 @@ import numpy as np
 #Carrega a imagem do diretório 
 
 
-paternroi 
+paternroi =
 
-pecanalisar 
+pecanalisar =
 
 
 #Separa a imagem do padrão em três planos RGB, o output será um vetor de Mat  
@@ -46,16 +46,13 @@ cv2.normalize(b_histpadrao, b_histpadrao, alpha=0, beta=hist_h, norm_type=cv2.NO
 cv2.normalize(g_histpadrao, g_histpadrao, alpha=0, beta=hist_h, norm_type=cv2.NORM_MINMAX)
 cv2.normalize(r_histpadrao, r_histpadrao, alpha=0, beta=hist_h, norm_type=cv2.NORM_MINMAX)
 for i in range(1, histSize):
-    cv2
-.line(histImage, ( bin_w*(i-1), hist_h - int(np.round(b_histpadrao[i-1])) ),
+    cv2.line(histImage, ( bin_w*(i-1), hist_h - int(np.round(b_histpadrao[i-1])) ),
             ( bin_w*(i), hist_h - int(np.round(b_histpadrao[i])) ),
             ( 255, 0, 0), thickness=2)
-    cv2
-.line(histImage, ( bin_w*(i-1), hist_h - int(np.round(g_histpadrao[i-1])) ),
+    cv2.line(histImage, ( bin_w*(i-1), hist_h - int(np.round(g_histpadrao[i-1])) ),
             ( bin_w*(i), hist_h - int(np.round(g_histpadrao[i])) ),
             ( 0, 255, 0), thickness=2)
-    cv2
-.line(histImage, ( bin_w*(i-1), hist_h - int(np.round(r_histpadrao[i-1])) ),
+    cv2.line(histImage, ( bin_w*(i-1), hist_h - int(np.round(r_histpadrao[i-1])) ),
             ( bin_w*(i), hist_h - int(np.round(r_histpadrao[i])) ),
             ( 0, 0, 255), thickness=2)
 
@@ -68,16 +65,13 @@ cv2.normalize(b_histpeca, b_histpeca, alpha=0, beta=hist_h, norm_type=cv2.NORM_M
 cv2.normalize(g_histpeca, g_histpeca, alpha=0, beta=hist_h, norm_type=cv2.NORM_MINMAX)
 cv2.normalize(r_histpeca, r_histpeca, alpha=0, beta=hist_h, norm_type=cv2.NORM_MINMAX)
 for i in range(1, histSize):
-    cv2
-.line(histImagepeca, ( bin_w*(i-1), hist_h - int(np.round(b_histpeca[i-1])) ),
+    cv2.line(histImagepeca, ( bin_w*(i-1), hist_h - int(np.round(b_histpeca[i-1])) ),
             ( bin_w*(i), hist_h - int(np.round(b_histpeca[i])) ),
             ( 255, 0, 0), thickness=2)
-    cv2
-.line(histImagepeca, ( bin_w*(i-1), hist_h - int(np.round(g_histpeca[i-1])) ),
+    cv2.line(histImagepeca, ( bin_w*(i-1), hist_h - int(np.round(g_histpeca[i-1])) ),
             ( bin_w*(i), hist_h - int(np.round(g_histpeca[i])) ),
             ( 0, 255, 0), thickness=2)
-    cv2
-.line(histImagepeca, ( bin_w*(i-1), hist_h - int(np.round(r_histpeca[i-1])) ),
+    cv2.line(histImagepeca, ( bin_w*(i-1), hist_h - int(np.round(r_histpeca[i-1])) ),
             ( bin_w*(i), hist_h - int(np.round(r_histpeca[i])) ),
             ( 0, 0, 255), thickness=2)
 
