@@ -46,10 +46,25 @@ class loop():
 
         mmperPixel       = Align.mmByPx
 
+        data             = {'Velocity':    {'mode'        :'',
+                                            'real'        :0,
+                                            'theoretical' :0},
+
+                            'Production':  {'total_m2'                    :0,
+                                            'productivity_m2'             :0,
+                                            'productivity_m2_unit'        :'M²/min',
+                                            'total_qtd_parts'             :0,
+                                            'productivity_qtd_Parts'      :0,
+                                            'productivity_qtd_Parts_unit' :'un/min'},
+
+                            'Quality':     {'on_screen_qtd_parts' :0,
+                                            'total_good_parts'    :0,
+                                            'total_bad_parts'     :0}
+                            }
+
         fps              = 30
         referencia       = 100000
         idpeca           = 1
-        m2               = 0
         counterframe     = 0
         counterobj       = 0
         objs_frame       = []
@@ -62,24 +77,32 @@ class loop():
 
         Foco = Focar()
 
-        PartExport = ExportStream('Parts_Export')
+        PartExport = ExportStream('Parts_Export', frequency=5)
         PartExport.start()
+
+        IhmExport  = ExportStream('IHM_Export', frequency=5)
+        IhmExport.start()
 
         if Use_QualityTest:
             QT = QualityTest(VT.perfectPaternPath, Foco.StackedParts).start()
+        
 
         if Get_Velocity:
             # Instância a classe para acompanhar a velocidade da esteira
+
+            VelocityMode = GeneralConfig.get('Modules', 'Get_Velocity_Mode')
             Velocity = getVelocity(Align.CameraConfigPath,
                                 Align.paternName,
-                                GeneralConfig.get('Modules', 'Get_Velocity_Mode'),
+                                VelocityMode,
                                 fps)
+
+            data['Velocity']['mode'] = VelocityMode
 
             encoderXYpos = Velocity.encoderXYpos
         else:
             print('O módulo de velocidade está desativado, será considerada para os cálculos uma velocidade de 18 metros/min')
             razao_horizontal = 0.0003 / fps # "resolução" horizontal de captura
-
+        
         while True:
             ret, frame = cap.read()
 
@@ -173,6 +196,8 @@ class loop():
                     # Mostra cada peça individualmente na tela, hist mostra também o histograma de cores                            
                     comp_pc, larg_pc = Foco.cutRectangle(cnts, frame_to_parts, obj_atual, mmperPixel, thresh, Show_separate_Parts, hist=Histogram_plot)
 
+                    data['Production']['total_qtd_parts'] = obj_atual[1]
+
                     # Escreve na imagem
                     self.escrever(frame, 'Pc {}'.format(obj_atual[1])              , cX, cY)
                     self.escrever(frame, 'Comp {:0.1f}'.format(comp_pc)            , cX, cY-30)
@@ -194,8 +219,9 @@ class loop():
                             Align.scanlineYpos : Align.scanlineYpos+1]
 
             pixels = cv2.countNonZero(scan)
-            m2 += ((pixels * mmperPixel)*razao_horizontal)/1000000
 
+            data['Production']['total_m2'] += ((pixels * mmperPixel)*razao_horizontal)/1000000
+            
             if Show_Log_Window == True:                
                 # Cria e monta a janela de "log"
                 if counterframe == 1:
@@ -212,7 +238,7 @@ class loop():
             # Desenha linhas e escreve na janela
             linegray = cv2.line(thresh,    (Align.scanlineYpos, Align.start_scan), (Align.scanlineYpos, Align.end_scan), (150),       2)
             linergb  = cv2.line(frame , (Align.scanlineYpos, Align.start_scan), (Align.scanlineYpos, Align.end_scan), (0, 0, 255), 2)
-            self.escrever(frame, "{:01.2f} Metros quadrados!".format(m2)           , 10, 60)
+            self.escrever(frame, "{:01.2f} Metros quadrados!".format(data['Production']['total_m2'])           , 10, 60)
             self.escrever(frame, "{:0.1f} segundos".format(timeit.default_timer()) , 10, 95)
             
             if Get_Velocity == True:
@@ -224,20 +250,19 @@ class loop():
             if Show_Main_Window == True:
                 cv2.imshow("Linha UV rgb", frame)
 
-            # Delay a partir de determinado frame
-            #if counterframe > 60:    
-            #   sleep(.1)
+            IhmExport.send(data)
 
             # Tecla de escape do processo -> ESC
             key = cv2.waitKey(1) 
             if key == 27:
                 break
 
-        print("{:0.2f} M² processados".format(m2))
+        print("{:0.2f} M² processados".format(data['Production']['total_m2']))
         cap.release()
 
         PartExport.stop()
-        
+        IhmExport.stop()
+
         cv2.destroyAllWindows()
 
         if Use_QualityTest == True:    

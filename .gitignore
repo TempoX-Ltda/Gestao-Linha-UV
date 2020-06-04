@@ -13,3 +13,4 @@ classes/desktop.ini
 classes/__pycache__/*
 /log/
 /imgs/
+/json/
