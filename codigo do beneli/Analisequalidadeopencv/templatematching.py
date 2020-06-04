@@ -35,13 +35,14 @@ class templateMatching():
 
 
             # Desenha o retângulo no padrão
-            cv2.rectangle(img,top_left, bottom_right, 255, 2)
+            retangulo = cv2.rectangle(img,top_left, bottom_right, 255, 2)
+           
+            patternroi = img[0:0+h,0:0+w]
+            cv2.imshow("cropped", patternroi) #"patternroi" é a váriavel que será utilizada nos algoritmos posteriores
+            cv2.imwrite("croped.jpg", patternroi)
 
+            cv2.waitKey(0)
             
-            
-
           
         return (res, img)
 
-
-            
