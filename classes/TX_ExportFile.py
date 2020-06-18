@@ -44,6 +44,7 @@ class ExportStream():
     def stop(self):
         print('O processo será interrompido.')
         self.running.put(False)
+        
         self.p.join()
     
     def send(self, data):
@@ -56,7 +57,7 @@ class ExportStream():
 
     def opencvImageExport(self, filePath, namePatern, sep, ext, tasks, frequency, running):
         
-        while running.empty():
+        while running.empty() or not tasks.empty():
             try:
                 task = tasks.get_nowait()
                 #print('Essa é a tarefa:')
@@ -90,8 +91,8 @@ class ExportStream():
         print('O processo ' + str(current_process().name) + ' foi interrompido com sucesso.')
 
     def jsonExport(self, filePath, name, ext, tasks, frequency, running):
-        
-        while running.empty():
+       
+        while running.empty() or not tasks.empty():
 
             try:
                 task = tasks.get_nowait()
@@ -111,8 +112,6 @@ class ExportStream():
                 json.dump(dict(task), outfile, indent=4, ensure_ascii=True)
 
                 #print('Eu salvei o arquivo ' + str(finalPath))
-
-        
 
         tasks.close()
         
