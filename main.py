@@ -1,4 +1,4 @@
-
+import multiprocessing as mp
 import os
 import traceback
 
@@ -45,6 +45,8 @@ if __name__ == '__main__':
                     response = input("Informe a forma de execução da análise:")
                     
                     if response.lower() == 'q':
+                        if inputType == "baslercamera":
+                            camCap.stop()
                         close = True
                         break
                         
@@ -65,11 +67,21 @@ if __name__ == '__main__':
 
             cap = ''
 
-            if inputConfig.get(method, "type") == "file":
+            inputType = inputConfig.get(method, "type").lower()
+
+            if inputType == "file":
                 checkfile(videoPath)
                 cap = cv2.VideoCapture(str(videoPath))
-            elif inputConfig.get(method, "type") == "camera":
-                cap = cv2.VideoCapture(int(videoPath))
+
+            elif inputType == "baslercamera":
+                from classes.TX_BaslerCamera import VideoGet
+
+                FrameQueue = mp.Queue()
+
+                camCap = VideoGet(FrameQueue, 30, 5, virtual=True)
+
+                cap = FrameQueue
+
             else:
                 print('O tipo de execução não foi definido corretamente no arquivo "inputConfig.ini". Encerrando...')
                 exit()
@@ -97,8 +109,13 @@ if __name__ == '__main__':
                 response = input()
 
                 if response.lower() == 'r':
+
                     L = loop()
-                    L.loop(Align, VT, cap)
+
+                    if inputType == "baslercamera":
+                        L.loop(Align, VT, cap, camCap.start())
+                    else:
+                        L.loop(Align, VT, cap)
                     break
 
                 elif response.lower() == 'c':

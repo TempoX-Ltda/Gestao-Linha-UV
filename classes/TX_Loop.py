@@ -1,7 +1,9 @@
-#Autor: Gabriel Niziolek - 2019
+#Autor: Gabriel Niziolek - 2020
 #Tempox Automacoes Indutriais LTDA.
 #GTRLP - Data de Testes
 
+import multiprocessing as mp
+import queue # imported for using queue.Empty exception
 from pathlib import Path
 import timeit
 from time import sleep
@@ -21,7 +23,7 @@ class loop():
     def escrever(self, imagem, texto, x, y):
         return(cv2.putText(imagem, texto, (x, y), cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,0),2,cv2.LINE_AA))
 
-    def loop(self, AlignClass, VideoTreshClass, opencvVideo):
+    def loop(self, AlignClass, VideoTreshClass, opencvVideo, camCapProcess=None):
         
         Align = AlignClass
         VT    = VideoTreshClass
@@ -104,7 +106,16 @@ class loop():
             razao_horizontal = 0.0003 / fps # "resolução" horizontal de captura
         
         while True:
-            ret, frame = cap.read()
+
+            if not camCapProcess == None:
+                try:
+                    frame = cap.get_nowait()
+                    ret = camCapProcess.running.empty()
+                except queue.Empty:
+                    continue
+                
+            else:
+                ret, frame = cap.read()
 
             if ret != True: #Valida se o frame existe
                 break
@@ -256,9 +267,14 @@ class loop():
             key = cv2.waitKey(1) 
             if key == 27:
                 break
+        
+        if not camCapProcess == None:
+            camCapProcess.stop()
+        else:
+            cap.release()
 
         print("{:0.2f} M² processados".format(data['Production']['total_m2']))
-        cap.release()
+        
 
         PartExport.stop()
         IhmExport.stop()

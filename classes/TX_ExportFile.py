@@ -14,14 +14,14 @@ class ExportStream():
 
         if not config.getboolean(ConfigSection, 'Work'):
             print('\nO módulo ' + str(ConfigSection) + ' do arquivo ' + str(configFile) + ' não está ativado!!!')
-            print('Você pode ativar por meio da key "work". \n')
+            print('Você pode ativar por meio da key "work" do arquivo .' + str(configFile)  + '\n')
 
         else:
-            path       = config.get(ConfigSection, 'Path_of_files')
-            fileType        = config.get(ConfigSection, 'Type_of_file')
+            path           = config.get(ConfigSection, 'Path_of_files')
+            fileType       = config.get(ConfigSection, 'Type_of_file')
 
-            self.running = Queue()
-            self.tasks = Queue()
+            self.running   = Queue()
+            self.tasks     = Queue()
             self.last_sent = 0
 
             if fileType == 'opencvImage':
