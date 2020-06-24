@@ -14,3 +14,4 @@ classes/__pycache__/*
 /log/
 /imgs/
 /json/
+.vscode/
