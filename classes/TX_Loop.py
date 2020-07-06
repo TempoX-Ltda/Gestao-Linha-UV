@@ -83,6 +83,9 @@ class loop():
         IhmExport  = ExportStream('IHM_Export', frequency=5)
         IhmExport.start()
 
+
+
+
         if Use_QualityTest:
             QT = QualityTest(VT.perfectPaternPath, Foco.StackedParts).start()
         

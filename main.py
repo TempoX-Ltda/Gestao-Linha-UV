@@ -10,6 +10,7 @@ from classes.TX_Loop         import loop
 from classes.TXVideoProcess  import VideoTresh, VideoAlign
 from classes.TX_CalibrateRes import CalibrateRes
 from classes.GitHub_Issue    import make_github_issue
+from classes.TX_ExportFile   import ExportStream
 
 def checkfile(arquivo):
     if not os.path.exists(arquivo):
@@ -27,6 +28,9 @@ if __name__ == '__main__':
 
     logpath = r'log/lastlog.txt'
     log = open(logpath, 'w')
+
+    IhmImport  = ExportStream('IHM_Import', frequency=1)
+    IhmImport.start()
 
     try:
         while True:
@@ -105,6 +109,8 @@ if __name__ == '__main__':
                     Calibrate = CalibrateRes(cap, Align, cameraConfigPath)
                     Calibrate.calibrate(inputConfig.get(method, "cameraAlign"))
                     break
+    
+        IhmImport.stop()
 
     except Exception as Error:
         traceback.print_exc(file=log)
